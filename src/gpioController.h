@@ -1,9 +1,9 @@
 #ifndef GPIO_CONTROLLER_H_
 #define GPIO_CONTROLLER_H_
 
+#include <fstream>
 #include <iostream>
 #include <memory>
-#include <fstream>
 #include <thread>
 
 #include "libsoc_board.h"
@@ -17,26 +17,25 @@ class Gpins {
   Gpins(Gpins &&other) = default;
   Gpins &operator=(Gpins &&other) = default;
   Gpins(const Gpins &) = delete;
-  Gpins &operator=(const Gpins &) = delete
+  Gpins &operator=(const Gpins &) = delete;
 
-                                    // pin map
-                                    const char *
-                                    pin_to_mxm3[20] = {
-                                        "MXM3_37" /*wake up*/,
-                                        "MXM3_209" /*i2c_sda*/,
-                                        "MXM3_211" /*i2c_scl*/,
-                                        "MXM3_221" /*spi1_clk*/,
-                                        "MXM3_227" /*spi1_cs*/,
-                                        "MXM3_223" /*spi1_miso*/,
-                                        "MXM3_225" /*spi1_mosi*/,
-                                        "MXM3_1" /*gpio*/,
-                                        "MXM3_3" /*gpio*/,
-                                        "MXM3_5" /*gpio*/,
-                                        "MXM3_7" /*gpio*/,
-                                        "MXM3_11" /*gpio*/,
-                                        "MXM3_13" /*gpio*/,
-                                        "MXM3_15" /*gpio*/,
-                                        "MXM3_17" /*gpio*/
+  // pin map
+  const char *pin_to_mxm3[20] = {
+      "MXM3_37" /*wake up*/,
+      "MXM3_209" /*i2c_sda*/,
+      "MXM3_211" /*i2c_scl*/,
+      "MXM3_221" /*spi1_clk*/,
+      "MXM3_227" /*spi1_cs*/,
+      "MXM3_223" /*spi1_miso*/,
+      "MXM3_225" /*spi1_mosi*/,
+      "MXM3_1" /*gpio*/,
+      "MXM3_3" /*gpio*/,
+      "MXM3_5" /*gpio*/,
+      "MXM3_7" /*gpio*/,
+      "MXM3_11" /*gpio*/,
+      "MXM3_13" /*gpio*/,
+      "MXM3_15" /*gpio*/,
+      "MXM3_17" /*gpio*/
   };
 
   // convert pin to gpio pin
@@ -74,7 +73,7 @@ class Gpins {
                       gpio_direction direction = OUTPUT,
                       gpio_level level = HIGH,
                       gpio_controller_callback call_back = nullptr,
-                      Gpins::Pin pin = Gpins::Pin::pin13);
+                      Gpins::Pin pin = Gpins::Pin::kPin13);
 
   typedef int (*callback)(void *);
   callback gpio_interrupt_callback;
@@ -125,7 +124,7 @@ class SystemSleepController : public IController {
           file.close();
           return 0;
         },
-        GpioPin::Pin::pin16);
+        GpioPin::Pin::kPin16);
 
     uint32_t ret = libsoc_gpio_set_direction(gpins_.gpio_p, gpins_.direction);
     if (ret == EXIT_FAILURE) {
@@ -174,7 +173,7 @@ class ToogleBtn : public IController {
           value_ = !value_;
           return value_;
         },
-        GpioPin::Pin::pin14);
+        GpioPin::Pin::kPin14);
 
     uint32_t ret = libsoc_gpio_set_direction(gpins_.gpio_p, gpins_.direction);
     if (ret == EXIT_FAILURE) {
