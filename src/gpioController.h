@@ -13,8 +13,8 @@
 using namespace std;
 
 class Gpins {
- public:
-  Gpins():gpio_interrupt_callback{nullptr}{}
+public:
+  Gpins() : gpio_interrupt_callback{nullptr} {}
   // this class is a move only class
   Gpins(Gpins &&other) = default;
   Gpins &operator=(Gpins &&other) = default;
@@ -71,14 +71,10 @@ class Gpins {
 
   typedef int (*callback)(void *);
   callback gpio_interrupt_callback;
-  Gpins Create(shared_ptr<board_config> config,
-                      gpio_mode mode = LS_SHARED,
-                      gpio_edge edge = NONE,
-                      gpio_direction direction = OUTPUT,
-                      gpio_level level = HIGH,
-                      callback call_back = nullptr,
-                      Gpins::Pin pin = Gpins::Pin::kPin13);
-
+  Gpins Create(shared_ptr<board_config> config, gpio_mode mode = LS_SHARED,
+               gpio_edge edge = NONE, gpio_direction direction = OUTPUT,
+               gpio_level level = HIGH, callback call_back = nullptr,
+               Gpins::Pin pin = Gpins::Pin::kPin13);
 
   unique_ptr<gpio> gpio_p = nullptr;
   gpio_direction direction;
@@ -89,157 +85,49 @@ class Gpins {
 };
 
 class IController {
- public:
+public:
   virtual void Init(shared_ptr<board_config> config) = 0;
   virtual void Close(void) = 0;
 
   virtual ~IController() {}
 };
 
-class SystemSleepController: public IController {
- private:
+class SystemSleepController : public IController {
+private:
   Gpins gpins_;
   volatile bool value_;
 
- public:
+public:
   SystemSleepController() : value_{false} {}
   ~SystemSleepController() { Close(); }
-  void Init(shared_ptr<board_config> config) {
-    if (!config) {
-      throw runtime_error{
-          "Couldn't initialize sleep controller, config is null"};
-    }
-
-    gpins_ = gpins_.Create(
-        config, LS_SHARED, BOTH, INPUT, LOW,
-        [](void *x) {
-          this_thread::sleep_for(chrono::milliseconds(50));
-          auto pr =  static_cast<SystemSleepController*>(x);
-          if (!pr->value_) return 0;
-
-          pr->value_ = false;
-          std::ofstream file("/sys/power/state");
-          if (!file) {
-            cerr << "GpioController::SystemSleep Error : can not open file"
-                 << endl;
-          }
-          file << "mem";
-          file.close();
-          return 0;
-        },
-        Gpins::Pin::kPin16);
-
-    uint32_t ret = libsoc_gpio_set_direction(gpins_.gpio_p.get(), gpins_.direction);
-    if (ret == EXIT_FAILURE) {
-      throw runtime_error{"Failed to set gpio direction"};
-    }
-    // Set Intrrupt Mode
-    ret = libsoc_gpio_set_edge(gpins_.gpio_p.get(), gpins_.edge);
-    if (ret == EXIT_FAILURE) {
-      throw runtime_error{"Failed to set gpio edge"};
-    }
-
-    // Set intrrupt callback
-    ret = libsoc_gpio_callback_interrupt(
-        gpins_.gpio_p.get(), gpins_.gpio_interrupt_callback, this);
-    if (ret == EXIT_FAILURE) {
-      throw runtime_error{"Failed to set gpio callback"};
-    }
-  }
-  void Close() {
-    if (gpins_.gpio_p) {
-      uint32_t ret = libsoc_gpio_free(gpins_.gpio_p.get());
-      if (ret == EXIT_FAILURE)
-        cerr << "SleepController close: Couldn't free gpio" << endl;
-    }
-  }
+  void Init(shared_ptr<board_config> config);
+  void Close();
 };
 
 class ToogleBtn : public IController {
- private:
+private:
   Gpins gpins_;
   volatile bool value_;
 
- public:
+public:
   ToogleBtn() : value_{false} {}
   ~ToogleBtn() { Close(); }
 
-  void Init(shared_ptr<board_config> config) {
-    if (!config) {
-      throw runtime_error{
-          "Couldn't initialize sleep controller, config is null"};
-    }
-
-    gpins_ = gpins_.Create(
-        config, LS_SHARED, RISING, INPUT, LOW,
-        [](void *x) {
-          auto pr = static_cast<ToogleBtn*>(x);
-          pr->value_ = !pr->value_;
-          return 1;
-        },
-        Gpins::Pin::kPin14);
-
-    uint32_t ret = libsoc_gpio_set_direction(gpins_.gpio_p.get(), gpins_.direction);
-    if (ret == EXIT_FAILURE) {
-      throw runtime_error{"Failed to set gpio direction"};
-    }
-
-    // Set Intrrupt Mode
-    ret = libsoc_gpio_set_edge(gpins_.gpio_p.get(), gpins_.edge);
-    if (ret == EXIT_FAILURE) {
-      throw runtime_error{"Failed to set gpio edge"};
-    }
-
-    // Set intrrupt callback
-    ret = libsoc_gpio_callback_interrupt(
-        gpins_.gpio_p.get(), gpins_.gpio_interrupt_callback, this);
-    if (ret == EXIT_FAILURE) {
-      throw runtime_error{"Failed to set gpio callback"};
-    }
-  }
-
-  void Close() {
-    if (gpins_.gpio_p) {
-      uint32_t ret = libsoc_gpio_free(gpins_.gpio_p.get());
-      if (ret == EXIT_FAILURE) cerr << "Couldn't free gpio" << endl;
-    }
-  }
+  void Init(shared_ptr<board_config> config);
+  void Close();
 };
 
 class GpioController {
- public:
-  GpioController(const GpioController &) = delete;             // cc
-  GpioController &operator=(const GpioController &) = delete;  // ca
-  GpioController(GpioController &&) = delete;                  // mc
-  GpioController &operator=(GpioController &&) = delete;       // ma
+public:
+  GpioController(const GpioController &) = delete;            // cc
+  GpioController &operator=(const GpioController &) = delete; // ca
+  GpioController(GpioController &&) = delete;                 // mc
+  GpioController &operator=(GpioController &&) = delete;      // ma
+  GpioController();
+  ~GpioController();
+  void AddController(unique_ptr<IController> controller);
 
-  GpioController() {
-    config_ = unique_ptr<board_config>(libsoc_board_init());  // initialize libsoc once
-    if (config_ == NULL) {
-      throw runtime_error{"Error: Couldn't init board"};
-    }
-  }
-
-  ~GpioController() {
-    for (auto &item : clist_) {
-      try {
-        item->Close();
-      } catch (const std::exception &ex) {
-        cerr << ex.what();
-      }
-    }
-  }
-
-  void AddController(unique_ptr<IController> controller) {
-    try {
-      controller->Init(config_);
-      clist_.push_back(std::move(controller));
-    } catch (const std::exception &ex) {
-      cerr << ex.what();
-    }
-  }
-
- private:
+private:
   shared_ptr<board_config> config_;
   vector<unique_ptr<IController>> clist_;
 };
