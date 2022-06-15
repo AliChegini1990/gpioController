@@ -15,8 +15,8 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 14)
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
 # libsoc 
-target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/libsoc/include/)
-target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/libsoc/lib/)
+target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/libsoc/include/)
+target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/libsoc/lib/)
 target_link_libraries(${PROJECT_NAME} ${PROJECT_SOURCE_DIR}/libsoc/lib/libsoc.a)
 
 # compile options
@@ -24,4 +24,5 @@ target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wpedantic -Wextra)
 
 target_link_libraries(${PROJECT_NAME} -lpthread)
 
-
+# add test
+add_subdirectory(test)
