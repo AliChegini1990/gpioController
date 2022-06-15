@@ -5,8 +5,9 @@ A simple GPIO controller.
 
 # Diagram
 
+```
 +----------------------+
-|   gpio_controller    |
+|   gpioController     |
 |                      |
 |   +--------------+   |
 |   |  IControlle  |   |
@@ -26,6 +27,7 @@ A simple GPIO controller.
 +-----------v----------+
 |         libsoc       |
 +----------------------+
+```
 
 # How to use
 
