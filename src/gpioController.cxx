@@ -17,6 +17,19 @@ Gpins Gpins::Create(shared_ptr<board_config> config, gpio_mode mode,
                            pin_to_mxm3[static_cast<unsigned char>(pin)]),
       mode));
 
+  if (!gpio_p)
+    throw runtime_error{"Failed to set gpio direction"};
+
+  uint32_t ret =
+      libsoc_gpio_set_direction(gpio_p.get(), direction);
+  if (ret == EXIT_FAILURE) {
+    throw runtime_error{"Failed to set gpio direction"};
+  }
+  // Set Intrrupt Mode
+  ret = libsoc_gpio_set_edge(gpio_p.get(), edge);
+  if (ret == EXIT_FAILURE) {
+    throw runtime_error{"Failed to set gpio edge"};
+  }
   return pgpio;
 }
 
@@ -45,19 +58,8 @@ void SystemSleepController::Init(shared_ptr<board_config> config) {
       },
       Gpins::Pin::kPin16);
 
-  uint32_t ret =
-      libsoc_gpio_set_direction(gpins_.gpio_p.get(), gpins_.direction);
-  if (ret == EXIT_FAILURE) {
-    throw runtime_error{"Failed to set gpio direction"};
-  }
-  // Set Intrrupt Mode
-  ret = libsoc_gpio_set_edge(gpins_.gpio_p.get(), gpins_.edge);
-  if (ret == EXIT_FAILURE) {
-    throw runtime_error{"Failed to set gpio edge"};
-  }
-
   // Set intrrupt callback
-  ret = libsoc_gpio_callback_interrupt(gpins_.gpio_p.get(),
+  uint32_t ret = libsoc_gpio_callback_interrupt(gpins_.gpio_p.get(),
                                        gpins_.gpio_interrupt_callback, this);
   if (ret == EXIT_FAILURE) {
     throw runtime_error{"Failed to set gpio callback"};
@@ -84,20 +86,8 @@ void ToogleBtn::Init(shared_ptr<board_config> config) {
       },
       Gpins::Pin::kPin14);
 
-  uint32_t ret =
-      libsoc_gpio_set_direction(gpins_.gpio_p.get(), gpins_.direction);
-  if (ret == EXIT_FAILURE) {
-    throw runtime_error{"Failed to set gpio direction"};
-  }
-
-  // Set Intrrupt Mode
-  ret = libsoc_gpio_set_edge(gpins_.gpio_p.get(), gpins_.edge);
-  if (ret == EXIT_FAILURE) {
-    throw runtime_error{"Failed to set gpio edge"};
-  }
-
   // Set intrrupt callback
-  ret = libsoc_gpio_callback_interrupt(gpins_.gpio_p.get(),
+  uint32_t ret = libsoc_gpio_callback_interrupt(gpins_.gpio_p.get(),
                                        gpins_.gpio_interrupt_callback, this);
   if (ret == EXIT_FAILURE) {
     throw runtime_error{"Failed to set gpio callback"};
