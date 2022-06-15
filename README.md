@@ -37,7 +37,7 @@ A simple GPIO controller.
 class Led: public IController{
   // override functions
 
-  void Init(shared_ptr<board_config> config) {
+  void Init(shared_ptr<board_config> config) override {
   if (!config) {
     throw runtime_error{"Couldn't initialize sleep controller, config is null"};
   }
@@ -68,7 +68,7 @@ class Led: public IController{
     throw runtime_error{"Failed to set gpio callback"};
   }
 }
-void Close() {
+void Close() override {
   if (gpins_.gpio_p) {
     uint32_t ret = libsoc_gpio_free(gpins_.gpio_p.get());
     if (ret == EXIT_FAILURE)
