@@ -100,7 +100,7 @@ private:
 public:
   SystemSleepController() : value_{false} {}
   ~SystemSleepController() { Close(); }
-  void Init(shared_ptr<board_config> config);
+  void Init(shared_ptr<board_config> config) override;
   void Close();
 };
 
@@ -113,7 +113,7 @@ public:
   ToogleBtn() : value_{false} {}
   ~ToogleBtn() { Close(); }
 
-  void Init(shared_ptr<board_config> config);
+  void Init(shared_ptr<board_config> config) override;
   void Close();
 };
 
