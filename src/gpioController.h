@@ -4,12 +4,12 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
-#include <thread>
 #include <vector>
 
 #include "libsoc_board.h"
 #include "libsoc_gpio.h"
 
+namespace gpio_controller {
 using namespace std;
 
 class Gpins {
@@ -64,7 +64,7 @@ public:
     kPin20 = 14
   };
 
-  using callback = int(*)(void *);
+  using callback = int (*)(void *);
   callback gpio_interrupt_callback;
   Gpins Create(shared_ptr<board_config> config, gpio_mode mode = LS_SHARED,
                gpio_edge edge = NONE, gpio_direction direction = OUTPUT,
@@ -83,7 +83,6 @@ class IController {
 public:
   virtual void Init(shared_ptr<board_config> config) = 0;
   virtual void Close(void) = 0;
-
   virtual ~IController() {}
 };
 
@@ -127,4 +126,5 @@ private:
   vector<unique_ptr<IController>> clist_;
 };
 
+} // namespace gpio_controller
 #endif

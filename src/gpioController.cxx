@@ -1,6 +1,6 @@
 #include "gpioController.h"
-#include "libsoc_board.h"
-#include "libsoc_gpio.h"
+#include <thread>
+namespace gpio_controller {
 
 Gpins Gpins::Create(shared_ptr<board_config> config, gpio_mode mode,
                     gpio_edge edge, gpio_direction direction, gpio_level level,
@@ -138,3 +138,4 @@ void GpioController::AddController(unique_ptr<IController> controller) {
     cerr << ex.what();
   }
 }
+} // namespace gpio_controller
