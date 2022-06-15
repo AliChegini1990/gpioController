@@ -1,6 +1,5 @@
 # GPIO Controller
-
-A simple GPIO controller.
+It is a simple c++ wrapper for libsoc.
 
 
 # Diagram
