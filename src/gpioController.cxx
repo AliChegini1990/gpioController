@@ -12,7 +12,7 @@ Gpins Gpins::Create(shared_ptr<board_config> config, gpio_mode mode,
   pgpio.level = level;
   pgpio.gpio_interrupt_callback = call_back;
   pgpio.pin = pin;
-  gpio_p = unique_ptr<gpio>(libsoc_gpio_request(
+  gpio_p = shared_ptr<gpio>(libsoc_gpio_request(
       libsoc_board_gpio_id(config.get(),
                            pin_to_mxm3[static_cast<unsigned char>(pin)]),
       mode));
@@ -114,7 +114,7 @@ void ToogleBtn::Close() {
 
 GpioController::GpioController() {
   config_ =
-      unique_ptr<board_config>(libsoc_board_init()); // initialize libsoc once
+      shared_ptr<board_config>(libsoc_board_init()); // initialize libsoc once
   if (config_ == NULL) {
     throw runtime_error{"Error: Couldn't init board"};
   }

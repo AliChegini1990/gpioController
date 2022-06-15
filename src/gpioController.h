@@ -15,11 +15,6 @@ using namespace std;
 class Gpins {
 public:
   Gpins() : gpio_interrupt_callback{nullptr} {}
-  // this class is a move only class
-  Gpins(Gpins &&other) = default;
-  Gpins &operator=(Gpins &&other) = default;
-  Gpins(const Gpins &) = delete;
-  Gpins &operator=(const Gpins &) = delete;
 
   // pin map
   const char *pin_to_mxm3[20] = {
@@ -76,7 +71,7 @@ public:
                gpio_level level = HIGH, callback call_back = nullptr,
                Gpins::Pin pin = Gpins::Pin::kPin13);
 
-  unique_ptr<gpio> gpio_p = nullptr;
+  shared_ptr<gpio> gpio_p = nullptr;
   gpio_direction direction;
   gpio_level level;
   gpio_edge edge;
