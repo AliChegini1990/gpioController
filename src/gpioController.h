@@ -69,7 +69,7 @@ public:
     kPin20 = 14
   };
 
-  typedef int (*callback)(void *);
+  using callback = int(*)(void *);
   callback gpio_interrupt_callback;
   Gpins Create(shared_ptr<board_config> config, gpio_mode mode = LS_SHARED,
                gpio_edge edge = NONE, gpio_direction direction = OUTPUT,
